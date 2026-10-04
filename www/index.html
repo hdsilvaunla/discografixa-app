@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' capacitor://localhost https://localhost; img-src 'self' data: blob: https: capacitor:; media-src 'self' blob:; connect-src 'self' capacitor://localhost https://localhost https://*; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
+<title>Discografía v7.0.10 — Colección profesional de CDs</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-top">
+      <div class="brand">
+        <span class="disc"></span>
+        <div>
+          <h1>Discografía <span class="version-badge">v7.0.10</span> <button type="button" class="theme-toggle" id="themeToggle" title="Cambiar tema (Ctrl+Shift+T)" style="width:26px;height:26px;font-size:.85rem;margin-left:4px">🌙</button></h1>
+          <small id="subtitle">Colección profesional de CDs</small>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="stat-icon">💿</div><div class="stat-text"><b id="stTotal">0</b><span>CDs</span></div></div>
+        <div class="stat"><div class="stat-icon purple">🎤</div><div class="stat-text"><b id="stArt">0</b><span>Intérpretes</span></div></div>
+        <div class="stat"><div class="stat-icon yellow">📅</div><div class="stat-text"><b id="stRango">—</b><span>Años</span></div></div>
+        <div class="stat"><div class="stat-icon green">🏆</div><div class="stat-text"><b id="stTop">—</b><span>Más CDs</span></div></div>
+        <div class="stat"><div class="stat-icon pink">🖼️</div><div class="stat-text"><b id="stCovers">0/0</b><span>Portadas</span></div></div>
+      </div>
+    </div>
+    <div class="tabs" id="tabs" role="tablist"></div>
+    <div class="subtabs" id="subtabs" role="tablist"></div>
+    <div class="toolbar">
+      <div class="toolbar-group grow">
+        <div class="search" id="searchBox">
+          <span class="ico">🔍</span>
+          <input type="text" id="q" placeholder="Buscar… (podés usar artist:, year:>, genre: AND/OR)" autocomplete="off">
+          <span class="adv-mode-badge" id="advModeBadge">AVANZADA</span>
+          <button class="clear" id="clearQ" title="Limpiar (Esc)">✕</button>
+        </div>
+        <button class="btn icon-only" id="btnFiltros" title="Filtros avanzados (Ctrl+F)">⚙️</button>
+      </div>
+      <div class="toolbar-group">
+        <button class="btn primary" id="btnNuevo" title="Nuevo CD (Ctrl+N)"><span class="ico">➕</span><span>Nuevo CD</span></button>
+        <button class="btn icon-only" id="btnScan" title="Escanear código de barras">📷</button>
+        <button class="btn" id="btnNuevaCat" title="Nueva categoría (Ctrl+K)"><span class="ico">📁</span><span>Categoría</span></button>
+      </div>
+      <div class="toolbar-group">
+        <div class="dropdown" id="ddImport">
+          <button class="btn" id="btnImportarDropdown" type="button"><span class="ico">📥</span><span>Importar</span><span style="font-size:.7rem;opacity:.6">▾</span></button>
+          <div class="dropdown-menu" id="ddImportMenu">
+            <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:6px 11px 4px">Importar datos</div>
+            <label for="fileInput" style="cursor:pointer;margin:0;display:block"><span data-act="import-file" role="button" tabindex="0" style="display:flex;align-items:center;gap:10px;width:100%;background:transparent;border:0;color:var(--txt);padding:9px 11px;border-radius:7px;cursor:pointer;font-size:.82rem;text-align:left;font-family:inherit">📁 Desde archivo</span></label>
+            <button type="button" data-act="import-folder">📂 Abrir desde carpeta predeterminada</button>
+            <button type="button" data-act="import-modern">🗂️ Selector de archivos</button>
+            <button type="button" data-act="import-paste">📋 Pegar JSON</button>
+            <div style="height:1px;background:var(--line);margin:5px 3px"></div>
+            <button type="button" data-act="folder-config">⚙️ Configurar carpeta predeterminada</button>
+          </div>
+        </div>
+        <div class="dropdown" id="ddExport">
+          <button class="btn" id="btnExportar" type="button"><span class="ico">📤</span><span>Exportar</span><span style="font-size:.7rem;opacity:.6">▾</span><span id="autobackupBadge" style="display:none">0</span></button>
+          <div class="dropdown-menu" id="ddExportMenu">
+            <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:6px 11px 4px">Copia de seguridad</div>
+            <button type="button" data-act="export-full-json">💾 JSON completo</button>
+            <div style="height:1px;background:var(--line);margin:5px 3px"></div>
+            <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:6px 11px 4px">Categoría actual</div>
+            <button type="button" data-act="export-cat-json">📄 JSON de categoría</button>
+            <button type="button" data-act="export-cat-csv">📊 CSV (Excel)</button>
+            <button type="button" data-act="export-cat-md">📝 Texto con formato</button>
+            <button type="button" data-act="export-cat-pdf">📄 PDF (con portadas)</button>
+            <div style="height:1px;background:var(--line);margin:5px 3px"></div>
+            <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:6px 11px 4px">Ubicación</div>
+            <button type="button" data-act="folder-browser">📂 Ver carpeta predeterminada <span id="folderBadge" style="display:none"></span></button>
+            <button type="button" data-act="folder-config">⚙️ Configurar carpeta…</button>
+            <div style="height:1px;background:var(--line);margin:5px 3px"></div>
+            <button type="button" data-act="print">🖨️ Imprimir</button>
+            <div style="height:1px;background:var(--line);margin:5px 3px"></div>
+            <label id="autoBackupToggleLabel" style="display:flex;align-items:center;gap:10px;padding:9px 11px;font-size:.82rem;cursor:pointer;color:var(--txt);border-radius:7px;user-select:none">
+              <input type="checkbox" id="autoBackupToggle" checked>
+              <span>💾 Copia de seguridad automática</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="toolbar-group">
+        <button class="btn" id="btnVista" title="Panel de control (Ctrl+D)"><span class="ico">📊</span><span>Panel</span></button>
+        <button class="btn icon-only" id="btnGrid" title="Vista cuadrícula (Ctrl+G)">▦</button>
+        <button class="btn warn" id="btnEnrichAll" title="Enriquecer (Ctrl+E)"><span class="ico">✨</span><span>Enriquecer</span></button>
+        <button class="btn danger" id="btnNotFound" title="Ver CDs pendientes" style="display:none"><span class="ico">📋</span><span>Pendientes</span><span id="notFoundBadge" style="background:rgba(255,107,107,.3);color:#fff;border-radius:20px;padding:1px 7px;font-size:.66rem;font-weight:700">0</span></button>
+      </div>
+      <div class="toolbar-group">
+        <button class="btn icon-only" id="btnUndo" title="Deshacer (Ctrl+Z)">↶</button>
+        <button class="btn icon-only" id="btnHistory" title="Historial (Ctrl+Shift+H)">📜</button>
+        <button class="btn icon-only" id="btnAyuda" title="Manual (F1)">❓</button>
+        <div class="dropdown" id="ddMore">
+          <button class="btn icon-only" id="btnMore" type="button" title="Más opciones">⚙️</button>
+          <div class="dropdown-menu" id="ddMoreMenu" style="right:0;left:auto">
+            <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:6px 11px 4px">Sistema</div>
+            <button type="button" data-act="owner-config">👤 Datos del propietario</button>
+            <button type="button" data-act="discogs-config">🎚️ Configurar Discogs</button>
+            <button type="button" data-act="folder-config">📁 Carpeta predeterminada</button>
+            <button type="button" data-act="clear-cache">🧹 Vaciar caché de metadatos</button>
+            <button type="button" data-act="diag-network">🩺 Diagnóstico de red</button>
+            <button type="button" data-act="reload">🔄 Recargar app</button>
+            <div style="height:1px;background:var(--line);margin:5px 3px"></div>
+            <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:6px 11px 4px">Legal</div>
+            <button type="button" data-act="show-legal">⚖️ Términos y aviso legal</button>
+            <button type="button" data-act="export-legal-pdf">📄 Guardar aviso legal (PDF)</button>
+            <div style="height:1px;background:var(--line);margin:5px 3px"></div>
+            <div style="font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;padding:6px 11px 4px">Zona de peligro</div>
+            <button type="button" data-act="reset" style="color:#ffb3b3">🗑️ Vaciar base de datos</button>
+          </div>
+        </div>
+        <button class="btn exit-btn" id="btnExit" title="Salir del sistema (obliga exportar)"><span class="ico">🚪</span><span>Salir</span></button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="filters-panel" id="filtersPanel">
+  <div><label for="fFiltroEstado">Estado</label><select id="fFiltroEstado"><option value="">Todos</option><option>Excelente</option><option>Muy bueno</option><option>Bueno</option><option>Regular</option><option>Para revisar</option><option>Faltante</option><option value="__sin_estado__">Sin estado</option></select></div>
+  <div><label for="fFiltroFormato">Formato</label><select id="fFiltroFormato"><option value="">Todos</option><option>CD</option><option>CD doble</option><option>CD caja</option><option>DVD</option><option>Vinilo</option><option>Casete</option><option>Digital</option><option>Otro</option></select></div>
+  <div><label for="fFiltroAnioDesde">Año desde</label><input type="number" id="fFiltroAnioDesde" min="1900" max="2100"></div>
+  <div><label for="fFiltroAnioHasta">Año hasta</label><input type="number" id="fFiltroAnioHasta" min="1900" max="2100"></div>
+  <div><label for="fFiltroUbicacion">Ubicación</label><select id="fFiltroUbicacion"><option value="">Todas</option><option value="__con__">Con ubicación</option><option value="__sin__">Sin ubicación</option></select></div>
+  <div><label for="fFiltroPortada">Portada</label><select id="fFiltroPortada"><option value="">Todas</option><option value="__con__">Con portada</option><option value="__sin__">Sin portada</option></select></div>
+  <div><label for="fFiltroPrestamo">Préstamo</label><select id="fFiltroPrestamo"><option value="">Todos</option><option value="__prestados__">Prestados</option><option value="__disponibles__">Disponibles</option><option value="__vencidos__">Vencidos</option></select></div>
+  <div><label>&nbsp;</label><button type="button" class="btn" id="btnLimpiarFiltros" style="width:100%">✕ Limpiar</button></div>
+</section>
+
+<main id="mainArea">
+  <section class="empty-state" id="emptyState">
+    <div class="icon">💿</div>
+    <h2>Tu base de datos está vacía</h2>
+    <p>Esta versión <b>no incluye ninguna categoría</b>: creá las tuyas desde cero. También podés importar una copia de seguridad JSON si ya tenías datos.</p>
+    <div class="cta-row">
+      <button type="button" class="btn primary cta" id="btnNuevaCatEmpty">📁 Crear primera categoría</button>
+      <label for="fileInputEmpty" class="btn cta" style="cursor:pointer">📥 Importar archivo</label>
+      <input type="file" id="fileInputEmpty" class="visually-hidden" accept=".json,.csv,application/json,text/csv">
+      <input type="file" id="fileInput" class="visually-hidden" accept=".json,.csv,application/json,text/csv">
+      <button type="button" class="btn cta" id="btnImportarModernoEmpty">📂 Selector de archivos</button>
+      <button type="button" class="btn cta" id="btnPegarEmpty">📋 Pegar JSON</button>
+      <button type="button" class="btn cta" id="btnAyudaEmpty">❓ Ver manual</button>
+    </div>
+    <div class="drop-zone" id="dropZone">⬇️ …o arrastrá y soltá el <b>.json</b> / <b>.csv</b> acá</div>
+  </section>
+
+  <section class="panel" id="tableView" style="display:none">
+    <div class="panel-head">
+      <h2><span class="dot"></span><span id="titleCDs">Listado</span><span id="activeArtistChip"></span></h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="count" id="cdCount">—</div>
+      </div>
+    </div>
+    <div class="selection-bar" id="selectionBar">
+      <b id="selCount">0</b> seleccionados
+      <span class="spacer"></span>
+      <button type="button" class="btn" id="btnSelEstado">🏷️ Estado</button>
+      <button type="button" class="btn" id="btnSelUbicacion">📍 Ubicación</button>
+      <button type="button" class="btn" id="btnSelMover">📁 Mover</button>
+      <button type="button" class="btn" id="btnSelCover">🖼️ Portadas</button>
+      <button type="button" class="btn danger" id="btnSelEliminar">🗑️ Eliminar</button>
+      <button type="button" class="btn" id="btnSelCancel">✕ Cancelar</button>
+    </div>
+    <div class="grid-wrap" id="gridWrap" style="display:none"></div>
+    <div class="table-wrap" id="tableWrap">
+      <table id="tablaCD">
+        <thead>
+          <tr>
+            <th class="check-col"><input type="checkbox" id="checkAll"></th>
+            <th class="cover-col"></th>
+            <th data-key="nro">Nro<span class="arrow">▲</span></th>
+            <th data-key="titulo">Título<span class="arrow">▲</span></th>
+            <th data-key="interprete">Intérprete<span class="arrow">▲</span></th>
+            <th data-key="anio">Año<span class="arrow">▲</span></th>
+            <th class="actions-col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyCD"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <div id="dashboardView">
+    <div class="dash-kpi-row" id="dashKpiRow"></div>
+    <div class="dash-charts-row">
+      <div class="dash-chart-box"><h3><span class="dot"></span>Distribución por categoría</h3><div class="chart-container"><canvas id="chartCategorias"></canvas></div></div>
+      <div class="dash-chart-box"><h3><span class="dot" style="background:#a78bfa;box-shadow:0 0 8px #a78bfa"></span>Top 10 intérpretes</h3><div class="chart-container"><canvas id="chartArtistas"></canvas></div></div>
+    </div>
+    <div class="dash-charts-row wide">
+      <div class="dash-chart-box"><h3><span class="dot" style="background:#ffca28;box-shadow:0 0 8px #ffca28"></span>Línea de tiempo — CDs por década</h3><div class="chart-container tall"><canvas id="chartDecadas"></canvas></div></div>
+    </div>
+    <div class="dash-charts-row">
+      <div class="dash-chart-box"><h3><span class="dot" style="background:#5ddc9a;box-shadow:0 0 8px #5ddc9a"></span>Top 10 sellos</h3><ul class="top-list" id="topSellos"></ul></div>
+      <div class="dash-chart-box"><h3><span class="dot" style="background:#ff6b6b;box-shadow:0 0 8px #ff6b6b"></span>Top 10 años</h3><ul class="top-list" id="topAnios"></ul></div>
+    </div>
+    <div class="dash-chart-box"><h3><span class="dot" style="background:#a78bfa;box-shadow:0 0 8px #a78bfa"></span>Nube de intérpretes (top 40)</h3><div class="wordcloud" id="wordcloud"></div></div>
+    <div class="dash-chart-box"><h3><span class="dot" style="background:#ffa94d;box-shadow:0 0 8px #ffa94d"></span>Salud de la colección</h3><div class="health-grid" id="healthGrid"></div></div>
+    <div class="projection-panel">
+      <h3><span class="dot" style="background:#5ddc9a;box-shadow:0 0 8px #5ddc9a"></span>Proyección matemática orientativa del valor</h3>
+      <div class="projection-controls">
+        <div class="field"><label for="projTasa">Tasa anual</label><select id="projTasa"><option value="0.03">3% (conservadora)</option><option value="0.05" selected>5% (moderada)</option><option value="0.08">8% (optimista)</option><option value="0.10">10% (vinilos raros)</option><option value="-0.02">-2% (depreciación)</option><option value="custom">Personalizada…</option></select></div>
+        <div class="field"><label for="projAnios">Años</label><input type="number" id="projAnios" min="1" max="30" value="10"></div>
+        <div class="field" id="projCustomWrap" style="display:none"><label for="projCustom">Tasa personalizada (%)</label><input type="number" id="projCustom" min="-50" max="100" step="0.5" value="5"></div>
+        <div class="field"><label for="projBase">Valor base</label><select id="projBase"><option value="auto">Valor actual</option><option value="manual">Manual</option></select></div>
+        <div class="field" id="projManualWrap" style="display:none"><label for="projManual">Valor base ($)</label><input type="number" id="projManual" min="0" step="100" value="10000"></div>
+      </div>
+      <div class="projection-result" id="projectionResult"></div>
+      <div class="projection-note disclaimer">⚠️ <b>Proyección orientativa.</b> No constituye una tasación profesional.</div>
+    </div>
+  </div>
+
+  <aside class="panel hidden-panel" id="panelArtistas">
+    <div class="panel-head">
+      <h2><span class="dot" style="background:#a78bfa;box-shadow:0 0 10px #a78bfa"></span>Intérpretes</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button type="button" class="btn" id="btnArtSort" title="Cambiar orden de la lista" style="height:28px;padding:4px 10px;font-size:.72rem">🔢 Cantidad</button>
+        <div class="count" id="artCount">—</div>
+      </div>
+    </div>
+    <div class="art-filter-notice" id="artFilterNotice">
+      <span class="ico">🔎</span>
+      <span>Filtrando por <b id="artFilterName">—</b></span>
+      <button type="button" id="artFilterClear">✕ Ver todos</button>
+    </div>
+    <div class="table-wrap"><ul class="art-list" id="listaArt"></ul></div>
+  </aside>
+</main>
+
+<footer>
+  <div class="fgroup">
+    <span>📀 <b id="fTotal">0</b> CDs en total</span>
+    <span id="fModified">· Sin cambios guardados</span>
+  </div>
+  <div class="fgroup">
+    <span><kbd>F1</kbd> ayuda · <kbd>Ctrl+N</kbd> nuevo · <kbd>Ctrl+K</kbd> categoría · <kbd>Ctrl+E</kbd> enriquecer · <kbd>Ctrl+D</kbd> dashboard · <kbd>Ctrl+Z</kbd> deshacer · <kbd>Ctrl+G</kbd> grid</span>
+  </div>
+  <div class="fgroup footer-author" style="width:100%;border-top:1px solid var(--line);margin-top:10px;padding-top:10px;justify-content:center;text-align:center">
+    <span id="footerAuthorLine"></span>
+  </div>
+</footer>
+
+<button id="btnReset" style="display:none" type="button"></button>
+
+<div id="coverLightbox">
+  <button type="button" class="lb-close" id="lbClose">✕</button>
+  <button type="button" class="lb-nav lb-prev" id="lbPrev">‹</button>
+  <img id="lbImg" src="" alt="Portada">
+  <button type="button" class="lb-nav lb-next" id="lbNext">›</button>
+  <div class="lb-info" id="lbInfo"></div>
+</div>
+
+<div class="modal-overlay" id="exitModal">
+  <div class="modal exit-modal" role="dialog" aria-modal="true" style="max-width:520px">
+    <div class="modal-head"><h3><span>🚪</span><span>Salir del sistema</span></h3><button type="button" class="close" id="exitClose">✕</button></div>
+    <div class="modal-body">
+      <div style="padding:16px 18px;border-radius:12px;border-left:4px solid var(--warn);background:rgba(255,169,77,.08);margin-bottom:16px;display:flex;gap:14px;font-size:.9rem;line-height:1.6">
+        <span style="font-size:1.6rem;line-height:1">⚠️</span>
+        <div><b>Antes de salir se recomienda exportar una copia de seguridad.</b> Así protegés todos los cambios recientes de tu colección.</div>
+      </div>
+      <div style="padding:12px 14px;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:10px;font-size:.85rem;line-height:1.7">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--muted)">Total de CDs</span><b style="color:var(--accent)" id="exitTotal">0</b></div>
+        <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Último guardado</span><b style="color:var(--ok);font-size:.8rem" id="exitLastSaved">—</b></div>
+      </div>
+      <div class="field" style="margin-top:16px">
+        <label style="display:flex;align-items:center;gap:8px;font-size:.82rem;text-transform:none;letter-spacing:0;color:var(--txt);cursor:pointer;font-weight:500">
+          <input type="checkbox" id="exitExportCheck" style="width:15px;height:15px;accent-color:var(--accent);cursor:pointer">
+          <span>Quiero exportar mi colección como archivo <b>.json</b> antes de salir</span>
+        </label>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn" id="exitCancel">Cancelar</button>
+      <div class="right">
+        <button type="button" class="btn danger" id="exitSkip">Salir sin exportar</button>
+        <button type="button" class="btn primary" id="exitConfirm" disabled>🚪 Exportar y salir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal cd-modal" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <h3><span id="modalIcon">➕</span><span id="modalTitle">Nuevo CD</span></h3>
+      <button type="button" class="close" id="modalClose">✕</button>
+    </div>
+    <form id="cdForm" autocomplete="off">
+      <input type="hidden" id="fLinks" value="">
+      <div class="modal-body">
+        <div class="enrich-bar" id="enrichBar" style="display:none">
+          <span class="disc-loader"></span>
+          <span class="msg" id="enrichMsg">Buscando…</span>
+          <span class="result" id="enrichResult"></span>
+        </div>
+        <div class="enrich-sources" id="enrichSources" style="display:none"></div>
+        <label class="enrich-toggle">
+          <input type="checkbox" id="enrichToggle" checked>
+          <span>✨ Buscar información y portada automáticamente</span>
+        </label>
+        <label class="enrich-toggle" style="margin-top:-8px">
+          <input type="checkbox" id="replaceToggle" checked>
+          <span>🔄 Reemplazar datos existentes <span style="color:var(--warn);font-size:.7rem">(si lo desactivás, solo completa vacíos)</span></span>
+        </label>
+
+        <div class="cd-hero">
+          <div class="cover-preview" id="coverPreview">
+            <div id="coverPreviewImg"></div>
+            <div class="cover-info">
+              <b>Portada</b>
+              <span id="coverPreviewSource">Sin portada</span>
+              <div class="cover-actions">
+                <button type="button" class="btn" id="btnFetchCover">🔍 Buscar</button>
+                <button type="button" class="btn" id="btnEditCoverUrl">✏️ URL</button>
+                <button type="button" class="btn danger" id="btnClearCover" style="display:none">🗑️</button>
+              </div>
+            </div>
+          </div>
+          <div class="cd-hero-fields">
+            <div class="field field-xl" id="wrapTitulo">
+              <label for="fTitulo">🎵 Título del álbum *</label>
+              <input type="text" id="fTitulo" required maxlength="200" data-uppercase placeholder="Ej: THE DARK SIDE OF THE MOON">
+              <div class="error">Obligatorio</div>
+            </div>
+            <div class="field field-xl" id="wrapInterprete">
+              <label for="fInterprete">🎤 Intérprete *</label>
+              <input type="text" id="fInterprete" required maxlength="120" data-uppercase list="interpreteList" placeholder="Ej: PINK FLOYD">
+              <datalist id="interpreteList"></datalist>
+              <div class="error">Obligatorio</div>
+            </div>
+            <div class="cd-hero-meta">
+              <div class="field"><label for="fCat">📁 Categoría</label><select id="fCat" required></select></div>
+              <div class="field"><label for="fSubcat">📂 Subcategoría</label><select id="fSubcat"><option value="">— Sin subcategoría —</option></select></div>
+              <div class="field" id="wrapNro"><label for="fNro">Nº *</label><input type="number" id="fNro" min="1" required><div class="error">Inválido</div></div>
+              <div class="field" id="wrapAnio"><label for="fAnio">Año álbum</label><input type="number" id="fAnio" min="1900" max="2100"><div class="error">1900-2100</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="field" id="wrapCoverUrl" style="display:none">
+          <label for="fCoverUrl">URL de portada</label>
+          <input type="text" id="fCoverUrl" placeholder="https://…">
+        </div>
+
+        <div class="modal-tabs">
+          <button type="button" class="modal-tab active" data-tab="edicion">📀 Edición</button>
+          <button type="button" class="modal-tab" data-tab="fisico">🔍 Estado físico</button>
+          <button type="button" class="modal-tab" data-tab="ubicacion">📍 Ubicación y valor</button>
+          <button type="button" class="modal-tab" data-tab="prestamo">📚 Préstamo</button>
+          <button type="button" class="modal-tab" data-tab="custom">📝 Personalizados</button>
+        </div>
+
+        <div class="tab-panel" data-panel="edicion">
+          <div class="field-row">
+            <div class="field"><label for="fFormato">Formato</label><select id="fFormato"><option value="">—</option><option>CD</option><option>CD doble</option><option>CD caja</option><option>DVD</option><option>Vinilo</option><option>Casete</option><option>Digital</option><option>Otro</option></select></div>
+            <div class="field"><label for="fEstado">Estado general</label><select id="fEstado"><option>Excelente</option><option>Muy bueno</option><option>Bueno</option><option>Regular</option><option>Para revisar</option><option>Faltante</option></select></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="fSello">Sello</label><input type="text" id="fSello" maxlength="120" data-uppercase list="selloList"><datalist id="selloList"></datalist></div>
+            <div class="field"><label for="fGenero">Género</label><input type="text" id="fGenero" maxlength="80" data-uppercase list="generoList"><datalist id="generoList"></datalist></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="fCatalogo">Nº catálogo</label><input type="text" id="fCatalogo" maxlength="80" data-uppercase></div>
+            <div class="field"><label for="fCodigo">Código de barras</label><input type="text" id="fCodigo" maxlength="40" data-uppercase></div>
+          </div>
+          <div class="field-row">
+            <div class="field" id="wrapISRC"><label for="fISRC">ISRC</label><input type="text" id="fISRC" maxlength="20" data-uppercase placeholder="AR-Z99-19-00001"><div class="hint">Formato CC-XXX-YY-NNNNN</div><div class="error">Formato inválido</div></div>
+            <div class="field" style="display:flex;align-items:end"><button type="button" class="btn" id="btnCapifSearch" style="width:100%">🇦🇷 Verificar en CAPIF</button></div>
+          </div>
+          <div id="capifMetaHint" style="font-size:.72rem;color:var(--muted);margin:-2px 0 12px;line-height:1.45">ℹ️ CAPIF <b>no se consulta automáticamente</b>. Se abre el buscador público.</div>
+          <div class="field-row">
+            <div class="field" id="wrapAnioEdicion">
+              <label for="fAnioEdicion">📅 Año de esta edición (prensada)</label>
+              <input type="number" id="fAnioEdicion" min="1900" max="2100" placeholder="Dejar vacío si es la original">
+              <div class="hint">Año en que se fabricó <b>tu ejemplar</b>. Es distinto al año del álbum.</div>
+              <div class="error">1900-2100</div>
+            </div>
+            <div class="field"><label for="fPais">País</label><input type="text" id="fPais" maxlength="80" data-uppercase></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="fEdicion">Edición (descripción)</label><input type="text" id="fEdicion" maxlength="120" data-uppercase placeholder="Ej: REEDICIÓN JAPONESA 2002"></div>
+          </div>
+        </div>
+
+        <div class="tab-panel" data-panel="fisico" style="display:none">
+          <div class="field-row">
+            <div class="field"><label for="fEstadoDisco">Disco</label><select id="fEstadoDisco"><option value="">—</option><option>Como nuevo (M)</option><option>Casi nuevo (NM)</option><option>Excelente (EX)</option><option>Muy bueno (VG)</option><option>Bueno (G)</option><option>Regular (F)</option><option>Malo (P)</option></select></div>
+            <div class="field"><label for="fEstadoCaja">Caja</label><select id="fEstadoCaja"><option value="">—</option><option>Como nuevo (M)</option><option>Casi nuevo (NM)</option><option>Excelente (EX)</option><option>Muy bueno (VG)</option><option>Bueno (G)</option><option>Regular (F)</option><option>Malo (P)</option></select></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="fEstadoFolleto">Folleto</label><select id="fEstadoFolleto"><option value="">—</option><option>Como nuevo (M)</option><option>Casi nuevo (NM)</option><option>Excelente (EX)</option><option>Muy bueno (VG)</option><option>Bueno (G)</option><option>Regular (F)</option><option>Malo (P)</option><option>Sin folleto</option></select></div>
+            <div class="field"><label for="fEstadoArte">Arte / carátula</label><select id="fEstadoArte"><option value="">—</option><option>Como nuevo (M)</option><option>Casi nuevo (NM)</option><option>Excelente (EX)</option><option>Muy bueno (VG)</option><option>Bueno (G)</option><option>Regular (F)</option><option>Malo (P)</option></select></div>
+          </div>
+        </div>
+
+        <div class="tab-panel" data-panel="ubicacion" style="display:none">
+          <div class="field-row">
+            <div class="field"><label for="fUbicacion">Ubicación física</label><input type="text" id="fUbicacion" maxlength="80" data-uppercase></div>
+            <div class="field"><label for="fCantidad">Cantidad</label><input type="number" id="fCantidad" min="1" value="1"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="fAdquisicion">Fecha ingreso</label><input type="date" id="fAdquisicion"></div>
+            <div class="field" id="wrapValor"><label for="fValor">Valor unitario</label><input type="number" id="fValor" min="0" step="0.01"><div class="error">Número inválido</div></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="fMoneda">Moneda</label><select id="fMoneda"><option value="ARS">ARS — Peso argentino</option><option value="USD">USD — Dólar</option><option value="EUR">EUR — Euro</option></select></div>
+            <div class="field" style="display:flex;align-items:end"><span class="hint">Valor total = valor × cantidad.</span></div>
+          </div>
+          <div class="field"><label for="fNotas">Observaciones</label><textarea id="fNotas" maxlength="500" rows="3"></textarea></div>
+        </div>
+
+        <div class="tab-panel" data-panel="prestamo" style="display:none">
+          <div id="loanActiveBanner" style="display:none;padding:12px 14px;border-radius:10px;background:rgba(255,169,77,.08);border-left:4px solid var(--warn);margin-bottom:14px;font-size:.85rem"></div>
+          <div class="field-row">
+            <div class="field"><label for="fPrestadoA">Prestado a</label><input type="text" id="fPrestadoA" maxlength="80" data-uppercase placeholder="NOMBRE DE LA PERSONA"></div>
+            <div class="field"><label for="fFechaPrestamo">Fecha préstamo</label><input type="date" id="fFechaPrestamo"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label for="fFechaDevolucion">Fecha devolución</label><input type="date" id="fFechaDevolucion"></div>
+            <div class="field"><label for="fNotasPrestamo">Notas</label><input type="text" id="fNotasPrestamo" maxlength="200" data-uppercase></div>
+          </div>
+        </div>
+
+        <div class="tab-panel" data-panel="custom" style="display:none">
+          <div id="customFieldsHost">
+            <div style="padding:16px;text-align:center;color:var(--muted);font-size:.82rem">No hay campos personalizados definidos.</div>
+          </div>
+          <button type="button" class="btn" id="btnOpenCfFromModal" style="margin-top:14px">⚙️ Administrar campos personalizados</button>
+        </div>
+
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn" id="btnCancel">Cancelar</button>
+        <div class="right">
+          <button type="button" class="btn" id="btnSaveAndNew">💾 Guardar y nuevo</button>
+          <button type="submit" class="btn primary" id="btnSave">💾 Guardar</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="viewModal">
+  <div class="modal wide" role="dialog" aria-modal="true">
+    <div class="modal-head"><h3><span>👁️</span><span id="viewTitle">Detalles del CD</span></h3><button type="button" class="close" id="viewClose">✕</button></div>
+    <div class="modal-body" id="viewBody"></div>
+    <div class="modal-foot">
+      <button type="button" class="btn" id="viewCloseBtn">Cerrar</button>
+      <div class="right"><button type="button" class="btn primary" id="viewEdit">✏️ Editar</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="pasteModal">
+  <div class="modal wide" role="dialog" aria-modal="true">
+    <div class="modal-head"><h3>📋 Pegar contenido JSON</h3><button type="button" class="close" id="pasteClose">✕</button></div>
+    <div class="modal-body"><div class="field"><label for="pasteArea">Contenido JSON</label><textarea id="pasteArea" rows="14" placeholder='{"version":4,"categories":{...}}'></textarea></div></div>
+    <div class="modal-foot">
+      <button type="button" class="btn" id="pasteCancel">Cancelar</button>
+      <div class="right"><button type="button" class="btn primary" id="pasteImport">📥 Importar</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="catModal">
+  <div class="modal" role="dialog" aria-modal="true" style="max-width:460px">
+    <div class="modal-head"><h3><span id="catModalIcon">➕</span><span id="catModalTitle">Nueva categoría</span></h3><button type="button" class="close" id="catModalClose">✕</button></div>
+    <form id="catForm" autocomplete="off">
+      <div class="modal-body">
+        <div class="field" id="wrapCatLabel">
+          <label for="catLabel">Nombre *</label>
+          <input type="text" id="catLabel" maxlength="40" required data-uppercase placeholder="EJ: JAZZ, CLÁSICA, ROCK…">
+          <div class="error">El nombre es obligatorio</div>
+        </div>
+        <div class="field">
+          <label for="catIcon">Icono (emoji)</label>
+          <input type="text" id="catIcon" maxlength="4" placeholder="🎵" style="font-size:1.4rem;text-align:center">
+          <div id="catIconPreview" style="font-size:2rem;text-align:center;margin-top:8px">🎵</div>
+        </div>
+        <div class="field"><label>Elegí uno</label><div class="emoji-picker" id="catIconPicker"></div></div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn" id="catCancel">Cancelar</button>
+        <button type="submit" class="btn primary" id="catSave">💾 Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" id="bulkMoveModal">
+  <div class="modal" role="dialog" aria-modal="true" style="max-width:520px">
+    <div class="modal-head"><h3><span>📁</span><span>Mover CDs a otra categoría</span></h3><button type="button" class="close" id="bulkMoveClose">✕</button></div>
+    <div class="modal-body">
+      <div style="padding:12px 14px;border-radius:10px;border-left:4px solid var(--accent);background:rgba(79,195,247,.06);margin-bottom:16px;display:flex;gap:12px;font-size:.85rem;line-height:1.5">
+        <span style="font-size:1.4rem;line-height:1">ℹ️</span>
+        <div>Vas a mover <b id="bulkMoveCount" style="color:var(--accent)">0</b> CD(s) a la categoría que elijas.</div>
+      </div>
+      <div class="section-label">Categoría destino</div>
+      <div id="bulkMoveCatList" style="display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto;padding:4px 2px;margin-bottom:14px"></div>
+      <div class="field" style="margin-bottom:0">
+        <label style="display:flex;align-items:center;gap:8px;font-size:.82rem;text-transform:none;letter-spacing:0;color:var(--txt);cursor:pointer;font-weight:500">
+          <input type="checkbox" id="bulkMoveKeepNro" style="width:15px;height:15px;accent-color:var(--accent);cursor:pointer">
+          <span>Conservar numeración original</span>
+        </label>
+      </div>
+      <div id="bulkMovePreview" style="margin-top:16px;padding:12px 14px;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:10px;font-size:.82rem;color:var(--muted);line-height:1.5;display:none"></div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn" id="bulkMoveCancel">Cancelar</button>
+      <div class="right"><button type="button" class="btn primary" id="bulkMoveConfirm" disabled>📁 Mover</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="bulkEnrichModal">
+  <div class="modal bulk-enrich-modal" role="dialog" aria-modal="true">
+    <div class="modal-head"><h3><span>✨</span><span>Enriquecer colección</span></h3><button type="button" class="close" id="bulkEnrichClose">✕</button></div>
+    <div class="modal-body">
+      <div id="bulkEnrichConfig">
+        <div style="display:flex;gap:12px;padding:12px 14px;border-radius:10px;margin:0 0 16px;border-left:4px solid var(--accent);background:rgba(79,195,247,.06);font-size:.85rem">
+          <span style="font-size:1.4rem;line-height:1">💡</span>
+          <div>Busca información de cada CD en <b>Discogs → MusicBrainz</b>. El año se toma del <b>master original</b>. Las portadas se verifican contra <b>Cover Art Archive</b>. Los <b>links de streaming</b> se obtienen de MusicBrainz.</div>
+        </div>
+        <div class="bulk-options">
+          <div class="opt-group"><h4>📋 Campos a completar</h4>
+            <label><input type="checkbox" id="optAnio" checked> Año álbum</label>
+            <label><input type="checkbox" id="optAnioEdicion" checked> 📅 Año edición</label>
+            <label><input type="checkbox" id="optSello" checked> Sello</label>
+            <label><input type="checkbox" id="optGenero" checked> Género</label>
+            <label><input type="checkbox" id="optPais" checked> País</label>
+            <label><input type="checkbox" id="optCatalogo" checked> Nº catálogo</label>
+            <label><input type="checkbox" id="optPortada" checked> 🖼️ Portada</label>
+            <label><input type="checkbox" id="optLinks" checked> 🎧 Links de streaming</label>
+          </div>
+          <div class="opt-group"><h4>🎯 Alcance</h4>
+            <label><input type="radio" name="scope" value="incomplete" checked> Solo datos faltantes</label>
+            <label><input type="radio" name="scope" value="category"> Solo categoría actual</label>
+            <label><input type="radio" name="scope" value="all"> Toda la colección</label>
+            <label style="margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)"><input type="radio" name="scope" value="all-force"> 🔄 <b>Todos</b> (re-chequear toda la colección)</label>
+          </div>
+          <div class="opt-group"><h4>🔎 Fuentes</h4>
+            <label><input type="checkbox" id="srcDiscogs" checked> Discogs</label>
+            <label><input type="checkbox" id="srcMB" checked> MusicBrainz</label>
+          </div>
+        </div>
+        <div class="bulk-options" style="grid-template-columns:1fr">
+          <div class="opt-group"><h4>⚙️ Comportamiento</h4>
+            <label><input type="checkbox" id="optReplace" checked> 🔄 Reemplazar datos existentes</label>
+            <label><input type="checkbox" id="optSkipDone" checked> Saltar CDs completos</label>
+            <label><input type="checkbox" id="optRetry" checked> Reintentar si falla</label>
+            <label><input type="checkbox" id="optSkipVarious" checked> Ignorar "Varios intérpretes"</label>
+            <label><input type="checkbox" id="optTrackNotFound" checked> Guardar no encontrados</label>
+            <label><input type="checkbox" id="optUseCache" checked> Usar caché local (7 días)</label>
+          </div>
+        </div>
+        <div id="bulkPreview" style="font-size:.85rem;color:var(--muted);padding:10px 12px;background:rgba(255,255,255,.02);border-radius:8px;border:1px solid var(--line)"></div>
+      </div>
+      <div id="bulkEnrichProgress" style="display:none">
+        <div class="bulk-progress-bar"><i id="bulkBar"></i></div>
+        <div class="bulk-status"><span style="display:flex;align-items:center;gap:10px"><span class="disc-loader"></span>Procesando <b id="bulkCurrent">0</b> de <b id="bulkTotal">0</b><span id="bulkRequeue"></span></span><span id="bulkEta"></span></div>
+        <div class="source-visualizer" id="bulkSourcesViz"></div>
+        <div class="bulk-log" id="bulkLog"></div>
+      </div>
+      <div id="bulkEnrichSummary" style="display:none">
+        <h3 style="margin:0 0 12px;font-size:.9rem;color:var(--accent)"><span>✅</span> Enriquecimiento completado</h3>
+        <div class="bulk-summary" id="bulkSummaryGrid"></div>
+        <div id="bulkNotFoundActions" style="display:none;margin-top:14px;padding:12px 14px;background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.3);border-radius:10px;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <div style="font-size:.85rem"><b style="color:var(--danger)" id="bulkNotFoundCount">0</b> CDs sin resultados</div>
+          <button type="button" class="btn danger" id="btnViewNotFoundFromBulk">📋 Ver lista</button>
+        </div>
+        <div class="bulk-log" id="bulkLogFinal" style="margin-top:14px;max-height:180px"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn" id="bulkEnrichCancel">Cerrar</button>
+      <div class="right">
+        <button type="button" class="btn danger" id="bulkEnrichStop" style="display:none">⏹️ Detener</button>
+        <button type="button" class="btn primary" id="bulkEnrichStart">🚀 Iniciar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="notFoundModal">
+  <div class="modal xwide" role="dialog" aria-modal="true">
+    <div class="modal-head"><h3><span>📋</span><span>CDs no encontrados</span></h3><button type="button" class="close" id="notFoundClose">✕</button></div>
+    <div class="modal-body">
+      <div class="print-header"><h1 style="margin:0 0 6px;font-size:1.4rem;color:#000">Discografía v7.0.10</h1><p style="margin:0 0 16px;color:#666;font-size:.9rem" id="printOwnerLine">Lista generada el <span id="printDate">—</span></p></div>
+      <div class="notfound-header-bar">
+        <div class="nf-info"><b id="notFoundCount">0</b> CDs pendientes</div>
+        <div class="nf-actions">
+          <button type="button" class="btn primary" id="btnPrintNotFound">🖨️ Imprimir</button>
+          <button type="button" class="btn success" id="btnExportNotFoundCSV">📊 CSV</button>
+          <button type="button" class="btn" id="btnExportNotFoundJSON">💾 JSON</button>
+          <button type="button" class="btn danger" id="btnClearNotFound">🗑️ Limpiar</button>
+        </div>
+      </div>
+      <div class="notfound-search"><span class="ico">🔍</span><input type="text" id="notFoundSearch" placeholder="Filtrar…"></div>
+      <div class="notfound-scroll">
+        <table class="notfound-table">
+          <thead><tr><th class="nf-num">Nº</th><th>Categoría</th><th>Título</th><th>Intérprete</th><th class="nf-anio">Año</th><th>Fuentes</th><th>Acciones</th></tr></thead>
+          <tbody id="notFoundTbody"></tbody>
+        </table>
+      </div>
+      <div class="print-footer" id="printFooterLine"></div>
+    </div>
+    <div class="modal-foot">
+      <div style="font-size:.75rem;color:var(--muted)">💡 Buscá manualmente en Google, Discogs, AllMusic o Wikipedia</div>
+      <div class="right"><button type="button" class="btn" id="notFoundCancel">Cerrar</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="autoBackupModal">
+  <div class="modal auto-backup-modal" role="dialog" aria-modal="true">
+    <div class="modal-head"><h3><span>💾</span><span>¿Hacer una copia de seguridad ahora?</span></h3><button type="button" class="close" id="autoBackupClose">✕</button></div>
+    <div class="modal-body">
+      <p style="color:var(--muted);font-size:.88rem;margin-top:0;line-height:1.55">Detectamos <b id="autoBackupCount" style="color:var(--accent)">0 cambios</b> desde la última copia <span id="autoBackupReasonWrap">(último: <b id="autoBackupReason" style="color:var(--accent2)">—</b>)</span>.</p>
+      <div class="info-box"><span class="ico">💡</span><div>La copia se guarda como archivo <code>.json</code>. Si configuraste una <b>carpeta predeterminada</b>, se guardará ahí.</div></div>
+      <label class="disable-row"><input type="checkbox" id="autoBackupDisableAfter"><span>No volver a preguntar</span></label>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="btn" id="autoBackupLater">Ahora no</button>
+      <div class="right"><button type="button" class="btn primary" id="autoBackupDo">💾 Sí, hacer copia</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="discogsConfigModal">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-head"><h3><span>🎚️</span><span>Configuración de Discogs</span></h3><button type="button" class="close" id="discogsConfigClose">✕</button></div>
+    <div class="modal-body">
+      <div style="padding:12px 14px;border-radius:10px;border-left:4px solid var(--accent);background:rgba(79,195,247,.08);margin-bottom:16px;display:flex;gap:12px;font-size:.85rem">
+        <span style="font-size:1.4rem;line-height:1">👤</span>
+        <div><b>Cada usuario configura su propio token.</b> Se guarda en tu navegador.</div>
+      </div>
+      <div class="section-label">Token API</div>
+      <div class="field">
+        <label for="discogsTokenInput">Token de Discogs</label>
+        <div style="display:flex;gap:8px">
+          <input type="password" id="discogsTokenInput" autocomplete="off" spellcheck="false" placeholder="Pegá aquí tu token API">
+          <button type="button" class="btn" id="discogsTokenToggle">👁️</button>
+        </div>
+      </div>
+      <div id="discogsStatus" style="margin-top:14px;padding:12px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.02);font-size:.82rem">⚪ Sin configurar</div>
+      <div class="section-label" style="margin-top:20px">Proxy CORS</div>
+      <div class="field">
+        <label for="discogsProxyInput">Prefijo de proxy (opcional)</label>
+        <input type="text" id="discogsProxyInput" autocomplete="off" spellcheck="false" placeholder="Dejar vacío para conexión directa">
+      </div>
+      <div id="discogsProtoHint" style="padding:10px 12px;border-radius:8px;font-size:.78rem;line-height:1.5;display:none"></div>
+      <div id="discogsSecurityWarning" style="padding:12px 14px;border-radius:10px;border-left:4px solid var(--warn);background:rgba(255,169,77,.08);margin-top:16px;display:none;gap:12px;font-size:.85rem;line-height:1.55"></div>
+      <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+        <a class="btn" href="https://www.discogs.com/settings/developers" target="_blank" rel="noopener">🔑 Obtener token</a>
+        <a class="btn" href="https://repertorio.capif.org.ar/" target="_blank" rel="noopener">🇦🇷 CAPIF</a>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <div><button type="button" class="btn danger" id="discogsTokenClear">🗑️ Eliminar token</button></div>
+      <div class="right">
+        <button type="button" class="btn" id="discogsConfigCancel">Cancelar</button>
+        <button type="button" class="btn primary" id="discogsTest" onclick="if(window.__discogsTest){window.__discogsTest();}else{alert('JS no cargó: revisá que app.js esté en la misma carpeta');}">🔌 Probar</button>
+        <button type="button" class="btn primary" id="discogsSave" onclick="if(window.__discogsSave){window.__discogsSave();}else{alert('JS no cargó: revisá que app.js esté en la misma carpeta');}">💾 Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="folderConfigModal">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-head"><h3><span>📁</span><span>Carpeta predeterminada</span></h3><button type="button" class="close" id="folderConfigClose">✕</button></div>
+    <div class="modal-body">
+      <div style="padding:12px 14px;border-radius:10px;border-left:4px solid var(--accent);background:rgba(79,195,247,.08);margin-bottom:16px;display:flex;gap:12px;font-size:.85rem;line-height:1.55">
+        <span style="font-size:1.4rem;line-height:1">ℹ️</span>
+        <div>Elegí una carpeta de tu sistema. Todos los <b>backups</b> se guardarán ahí.</div>
+      </div>
+      <div id="folderSupportStatus" style="margin-bottom:14px;padding:12px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.02);font-size:.82rem"></div>
+      <div class="field">
+        <label>Carpeta seleccionada</label>
+        <div style="display:flex;gap:8px;align-items:center;padding:10px 12px;background:var(--bg2);border:1px solid var(--line);border-radius:9px">
+          <span style="font-size:1.3rem">📂</span>
+          <span id="folderCurrentName" style="flex:1;font-size:.9rem;color:var(--txt);word-break:break-all">— Sin carpeta configurada —</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+        <button type="button" class="btn primary" id="folderPick">📂 Elegir carpeta</button>
+        <button type="button" class="btn" id="folderChange">🔄 Cambiar</button>
+        <button type="button" class="btn danger" id="folderRemove">🗑️ Quitar</button>
+        <button type="button" class="btn" id="folderTestPermission">🔌 Verificar acceso</button>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <div><button type="button" class="btn danger" id="folderClearAll">🗑️ Eliminar configuración</button></div>
+      <div class="right">
+        <button type="button" class="btn" id="folderConfigCancel">Cancelar</button>
+        <button type="button" class="btn primary" id="folderSave">💾 Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="folderBrowserModal">
+  <div class="modal wide" role="dialog" aria-modal="true">
+    <div class="modal-head"><h3><span>📂</span><span>Carpeta predeterminada</span></h3><button type="button" class="close" id="folderBrowserClose">✕</button></div>
+    <div class="modal-body">
+      <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap">
+        <div style="font-size:.82rem;color:var(--muted)">📁 Carpeta: <b style="color:var(--accent)" id="folderBrowserName">—</b></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button type="button" class="btn" id="folderChangeFromBrowser">⚙️ Cambiar</button>
+          <button type="button" class="btn" id="folderRefresh">🔄 Actualizar</button>
+          <button type="button" class="btn primary" id="folderUploadNow">💾 Guardar backup</button>
+        </div>
+      </div>
+      <div id="folderFileList" style="max-height:420px;overflow-y:auto;background:var(--bg2);border:1px solid var(--line);border-radius:10px"></div>
+    </div>
+    <div class="modal-foot">
+      <div style="font-size:.75rem;color:var(--muted)" id="folderBrowserInfo">—</div>
+      <div class="right"><button type="button" class="btn" id="folderBrowserCancel">Cerrar</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="ownerConfigModal">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-head"><h3><span>👤</span><span>Datos del propietario</span></h3><button type="button" class="close" id="ownerConfigClose">✕</button></div>
+    <div class="modal-body">
+      <div style="padding:12px 14px;border-radius:10px;border-left:4px solid var(--accent);background:rgba(79,195,247,.08);margin-bottom:16px;display:flex;gap:12px;font-size:.85rem">
+        <span style="font-size:1.4rem;line-height:1">ℹ️</span>
+        <div>Se muestran en el pie, impresiones y exportaciones. El email se usa en el User-Agent de MusicBrainz.</div>
+      </div>
+      <div class="field"><label for="ownerNameInput">Nombre</label><input type="text" id="ownerNameInput" maxlength="80" data-uppercase placeholder="EJ: HDSYSTEM IT"></div>
+      <div class="field"><label for="ownerContactInput">Contacto / Teléfono</label><input type="text" id="ownerContactInput" maxlength="60" data-uppercase placeholder="+54 9 11 4563-0851"></div>
+      <div class="field"><label for="ownerEmailInput">Correo electrónico</label><input type="email" id="ownerEmailInput" maxlength="80"></div>
+    </div>
+    <div class="modal-foot">
+      <div><button type="button" class="btn" id="ownerConfigClear">🧹 Limpiar</button></div>
+      <div class="right">
+        <button type="button" class="btn" id="ownerConfigCancel">Cancelar</button>
+        <button type="button" class="btn primary" id="ownerConfigSave">💾 Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="networkDiagModal">
+  <div class="modal wide" role="dialog" aria-modal="true">
+    <div class="modal-head"><h3><span>🩺</span><span>Diagnóstico de red</span></h3><button type="button" class="close" id="networkDiagClose">✕</button></div>
+    <div class="modal-body"><div id="networkDiagContent"></div></div>
+    <div class="modal-foot">
+      <div><button type="button" class="btn primary" id="networkDiagRun">🔄 Volver a ejecutar</button></div>
+      <div class="right"><button type="button" class="btn" id="networkDiagCancel">Cerrar</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="duplicatesModal">
+  <div class="modal xwide" role="dialog" aria-modal="true">
+    <div class="modal-head"><h3><span>🔍</span><span>Detección de duplicados</span></h3><button type="button" class="close" id="dupClose">✕</button></div>
+    <div class="modal-body">
+      <div id="dupSummary" style="padding:12px 14px;border-radius:10px;border-left:4px solid var(--warn);background:rgba(255,169,77,.08);margin-bottom:14px;font-size:.85rem;line-height:1.55"></div>
+      <div id="dupList"></div>
+    </div>
+    <div class="modal-foot">
+      <div><button type="button" class="btn" id="dupExportCSV">📊 Exportar CSV</button></div>
+      <div class="right"><button type="button" class="btn" id="dupCloseBtn">Cerrar</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="customFieldsModal">
+  <div class="modal" role="dialog" aria-modal="true" style="max-width:560px">
+    <div class="modal-head"><h3><span>📝</span><span>Campos personalizados</span></h3><button type="button" class="close" id="cfClose">✕</button></div>
+    <div class="modal-body">
+      <div style="padding:12px 14px;border-radius:10px;border-left:4px solid var(--purple);background:rgba(167,139,250,.08);margin-bottom:14px;font-size:.85rem;line-height:1.55">💡 Aparecen en el modal de CD y se exportan automáticamente.</div>
+      <div class="cf-list" id="cfList"></div>
+      <div class="section-label">Añadir campo</div>
+      <div class="field-row">
+        <div class="field"><label for="cfName">Nombre</label><input type="text" id="cfName" maxlength="40" data-uppercase placeholder="EJ: EDICIÓN LIMITADA"></div>
+        <div class="field"><label for="cfType">Tipo</label><select id="cfType"><option value="text">Texto</option><option value="number">Número</option><option value="date">Fecha</option><option value="boolean">Sí/No</option><option value="select">Lista</option></select></div>
+      </div>
+      <div class="field" id="cfOptionsWrap" style="display:none"><label for="cfOptions">Opciones (separadas por coma)</label><input type="text" id="cfOptions" placeholder="Ej: Sí,No,Tal vez"></div>
+      <button type="button" class="btn primary" id="cfAdd" style="width:100%">➕ Agregar campo</button>
+    </div>
+    <div class="modal-foot">
+      <div></div>
+      <div class="right"><button type="button" class="btn" id="cfCloseBtn">Cerrar</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="historyModal">
+  <div class="modal wide" role="dialog" aria-modal="true">
+    <div class="modal-head"><h3><span>📜</span><span>Historial de actividad</span></h3><button type="button" class="close" id="histClose">✕</button></div>
+    <div class="modal-body">
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+        <select id="histFilter" style="padding:8px 12px;background:var(--bg2);border:1px solid var(--line);border-radius:8px;color:var(--txt);font-size:.82rem">
+          <option value="">Todas las acciones</option>
+          <option value="CREATE">Creaciones</option>
+          <option value="EDIT">Ediciones</option>
+          <option value="DELETE">Eliminaciones</option>
+          <option value="IMPORT">Importaciones</option>
+          <option value="ENRICH">Enriquecimientos</option>
+          <option value="LOAN">Préstamos</option>
+          <option value="EXPORT">Exportaciones</option>
+        </select>
+        <input type="text" id="histSearch" placeholder="Buscar…" style="flex:1;min-width:180px;padding:8px 12px;background:var(--bg2);border:1px solid var(--line);border-radius:8px;color:var(--txt);font-size:.82rem">
+        <button type="button" class="btn danger" id="histClear">🗑️ Limpiar</button>
+      </div>
+      <div class="history-list" id="histList"></div>
+    </div>
+    <div class="modal-foot">
+      <div><button type="button" class="btn" id="histExport">📊 Exportar CSV</button></div>
+      <div class="right"><button type="button" class="btn" id="histCloseBtn">Cerrar</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="scannerModal">
+  <div class="modal" role="dialog" aria-modal="true" style="max-width:560px">
+    <div class="modal-head"><h3><span>📷</span><span>Escáner de códigos de barras</span></h3><button type="button" class="close" id="scanClose">✕</button></div>
+    <div class="modal-body">
+      <div id="scanFallback" style="display:none;padding:16px;background:rgba(255,169,77,.08);border-left:4px solid var(--warn);border-radius:10px;font-size:.85rem;line-height:1.55;margin-bottom:14px">
+        ⚠️ Tu navegador no soporta <code>BarcodeDetector</code>. Ingresá el código manualmente:
+      </div>
+      <div class="scanner-wrap" id="scanWrap">
+        <video id="scanVideo" autoplay muted playsinline></video>
+        <div class="scan-overlay"><div class="scan-frame"></div></div>
+      </div>
+      <div class="scanner-status" id="scanStatus">Iniciando cámara…</div>
+      <div style="margin-top:14px;display:flex;gap:8px">
+        <input type="text" id="scanManual" data-uppercase placeholder="O ingresá el código manualmente" style="flex:1;padding:10px 12px;background:var(--bg2);border:1px solid var(--line);border-radius:9px;color:var(--txt);font-size:.9rem;font-family:ui-monospace,Menlo,Consolas,monospace">
+        <button type="button" class="btn primary" id="scanManualSearch">🔍 Buscar</button>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <div><button type="button" class="btn" id="scanStop">⏹️ Detener</button></div>
+      <div class="right"><button type="button" class="btn" id="scanCloseBtn">Cerrar</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="loansModal">
+  <div class="modal wide" role="dialog" aria-modal="true">
+    <div class="modal-head"><h3><span>📚</span><span>CDs prestados</span></h3><button type="button" class="close" id="loanClose">✕</button></div>
+    <div class="modal-body">
+      <div id="loansSummary" style="padding:12px 14px;border-radius:10px;border-left:4px solid var(--warn);background:rgba(255,169,77,.08);margin-bottom:14px;font-size:.85rem;line-height:1.55"></div>
+      <div id="loansList"></div>
+    </div>
+    <div class="modal-foot">
+      <div><button type="button" class="btn" id="loanExportCSV">📊 Exportar CSV</button></div>
+      <div class="right"><button type="button" class="btn" id="loanCloseBtn">Cerrar</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="manualModal">
+  <div class="modal manual-modal" role="dialog" aria-modal="true">
+    <div class="modal-head"><h3 class="manual-head-title"><span>📖</span><span>Manual de uso</span><span class="version-badge">v7.0.10</span></h3><button type="button" class="close" id="manualClose">✕</button></div>
+    <div class="manual-layout">
+      <nav class="manual-nav" id="manualNav">
+        <div class="manual-nav-group"><div class="manual-nav-group-title">📚 General</div>
+          <button type="button" data-sec="intro" class="active"><span class="nav-ico">🏠</span><span>Introducción</span></button>
+          <button type="button" data-sec="primeros"><span class="nav-ico">🚀</span><span>Primeros pasos</span></button>
+          <button type="button" data-sec="atajos"><span class="nav-ico">⌨️</span><span>Atajos</span></button>
+        </div>
+        <div class="manual-nav-group"><div class="manual-nav-group-title">💿 Uso diario</div>
+          <button type="button" data-sec="cats"><span class="nav-ico">📁</span><span>Categorías</span></button>
+          <button type="button" data-sec="subcategorias"><span class="nav-ico">📂</span><span>Subcategorías</span></button>
+          <button type="button" data-sec="cds"><span class="nav-ico">💿</span><span>Gestión de CDs</span></button>
+          <button type="button" data-sec="portadas"><span class="nav-ico">🖼️</span><span>Portadas</span></button>
+          <button type="button" data-sec="filtros"><span class="nav-ico">🔍</span><span>Búsqueda avanzada</span></button>
+          <button type="button" data-sec="seleccion"><span class="nav-ico">☑️</span><span>Selección múltiple</span></button>
+        </div>
+        <div class="manual-nav-group"><div class="manual-nav-group-title">🎧 Streaming</div>
+          <button type="button" data-sec="streaming"><span class="nav-ico">🎧</span><span>Streaming inteligente</span></button>
+          <button type="button" data-sec="legal"><span class="nav-ico">⚖️</span><span>Aviso legal</span></button>
+        </div>
+        <div class="manual-nav-group"><div class="manual-nav-group-title">🆕 v7.0.x</div>
+          <button type="button" data-sec="anioedicion"><span class="nav-ico">📅</span><span>Año álbum vs Año edición</span></button>
+          <button type="button" data-sec="salida"><span class="nav-ico">🚪</span><span>Botón Salir</span></button>
+          <button type="button" data-sec="duplicados"><span class="nav-ico">🔍</span><span>Duplicados</span></button>
+          <button type="button" data-sec="prestamos"><span class="nav-ico">📚</span><span>Préstamos</span></button>
+          <button type="button" data-sec="cf"><span class="nav-ico">📝</span><span>Campos personalizados</span></button>
+          <button type="button" data-sec="escaner"><span class="nav-ico">📷</span><span>Escáner</span></button>
+          <button type="button" data-sec="historial"><span class="nav-ico">📜</span><span>Historial</span></button>
+          <button type="button" data-sec="tema"><span class="nav-ico">🎨</span><span>Tema claro/oscuro</span></button>
+          <button type="button" data-sec="grid"><span class="nav-ico">▦</span><span>Vista cuadrícula</span></button>
+          <button type="button" data-sec="corrector"><span class="nav-ico">🧹</span><span>Corrector y mayúsculas</span></button>
+        </div>
+        <div class="manual-nav-group"><div class="manual-nav-group-title">📊 Análisis</div>
+          <button type="button" data-sec="dash"><span class="nav-ico">📊</span><span>Dashboard</span></button>
+          <button type="button" data-sec="proyeccion"><span class="nav-ico">💰</span><span>Proyección</span></button>
+        </div>
+        <div class="manual-nav-group"><div class="manual-nav-group-title">🌐 Datos</div>
+          <button type="button" data-sec="enriquecimiento"><span class="nav-ico">✨</span><span>Enriquecimiento</span></button>
+          <button type="button" data-sec="discogs"><span class="nav-ico">🎚️</span><span>Discogs</span></button>
+          <button type="button" data-sec="folder"><span class="nav-ico">📁</span><span>Carpeta</span></button>
+          <button type="button" data-sec="importexport"><span class="nav-ico">📥</span><span>Import/Export</span></button>
+          <button type="button" data-sec="backup"><span class="nav-ico">💾</span><span>Backup</span></button>
+        </div>
+        <div class="manual-nav-group"><div class="manual-nav-group-title">🛡️ Referencia</div>
+          <button type="button" data-sec="faq"><span class="nav-ico">❓</span><span>FAQ</span></button>
+          <button type="button" data-sec="changelog"><span class="nav-ico">📝</span><span>Changelog</span></button>
+          <button type="button" data-sec="acerca"><span class="nav-ico">ℹ️</span><span>Acerca de</span></button>
+        </div>
+      </nav>
+      <div class="manual-content" id="manualContent">
+        <div class="manual-search"><span class="ico">🔍</span><input type="text" id="manualSearch" placeholder="Buscar en el manual…"></div>
+
+        <section class="manual-section active" data-sec="intro">
+          <div class="manual-section-head"><div class="sh-icon">🏠</div><div class="sh-text"><h2>Bienvenido a Discografía</h2><small>Versión 7.0.10 · Colección profesional de CDs</small></div></div>
+          <p><b>Discografía v7.0.10</b> es una aplicación web autocontenida para catalogar, organizar, enriquecer y analizar tu colección.</p>
+          <div class="callout ok"><span class="ico">🆕</span><div><b>Novedad v7.0.10:</b> <b>subcategorías asociadas</b> a cada categoría (con orden, icono y filtro propio), retrocompatible con backups anteriores.</div></div>
+        </section>
+
+        <section class="manual-section" data-sec="subcategorias">
+          <div class="manual-section-head"><div class="sh-icon">📂</div><div class="sh-text"><h2>Subcategorías</h2></div></div>
+          <p>Desde <b>v7.0.10</b> podés organizar cada categoría en subcategorías (por ejemplo: <i>ROCK NACIONAL</i>, <i>JAZZ ARGENTINO</i>, <i>EDICIONES ESPECIALES</i>).</p>
+          <h3>🎯 Cómo funciona</h3>
+          <ol>
+            <li>Elegí una categoría (no "Todas").</li>
+            <li>Debajo de las pestañas aparece la barra de subcategorías con el botón <b>➕ Crear primera subcategoría</b>.</li>
+            <li>Poné nombre e icono → Guardar.</li>
+            <li>En el modal de un CD, elegí <b>📂 Subcategoría</b>.</li>
+            <li>Click en una subcategoría para filtrar. Click de nuevo para volver a <b>📚 Todas</b>.</li>
+            <li>Botón <b>⋯</b> de la subcategoría → renombrar / cambiar icono / mover / eliminar.</li>
+          </ol>
+          <div class="callout warn"><span class="ico">💡</span><div><b>Formas de crear una subcategoría:</b><br>1) Botón <b>➕ Subcategoría</b> debajo de las pestañas.<br>2) Menú <b>⋯</b> de la categoría → <b>📂 Nueva subcategoría</b>.</div></div>
+          <div class="callout ok"><span class="ico">✅</span><div><b>Eliminar una subcategoría NO borra CDs.</b> Los CDs vuelven al estado "Sin subcategoría".</div></div>
+          <div class="callout"><span class="ico">💾</span><div>Las subcategorías se guardan en el backup JSON. Los backups viejos siguen funcionando (aparecen sin subcategorías).</div></div>
+        </section>
+
+        <section class="manual-section" data-sec="streaming">
+          <div class="manual-section-head"><div class="sh-icon">🎧</div><div class="sh-text"><h2>Streaming inteligente (iTunes + Odesli)</h2></div></div>
+          <p>Desde la <b>vista de un CD</b> aparece la sección <b>🎧 Escuchar en</b> con botones a los reproductores oficiales.</p>
+          <h3>🎯 ¿Cómo funciona?</h3>
+          <ol>
+            <li>Si el CD <b>ya tiene link guardado</b> (↗), el botón abre el álbum exacto directo.</li>
+            <li>Si no, la app busca en <b>iTunes Search API</b> (4 países: US, AR, ES, MX) con scoring estricto: <b>solo álbumes completos</b> (≥4 tracks, sin singles).</li>
+            <li>Luego usa <b>Odesli/song.link</b> para mapear el álbum a Spotify, YouTube Music, Deezer, Tidal, Amazon Music y SoundCloud.</li>
+            <li>Cada URL se valida con <code>isAlbumUrl()</code> para descartar tracks y playlists.</li>
+            <li>Aparece un <b>modal de confirmación</b> con la portada del álbum encontrado.</li>
+            <li>Elegís entre <b>3 opciones</b>:
+              <ul>
+                <li><b>✗ Buscar manualmente:</b> abre el buscador web del servicio.</li>
+                <li><b>🔗 Solo abrir:</b> abre 1 vez y cachea 30 días (no se guarda en la DB).</li>
+                <li><b>⭐ Recordar:</b> abre + guarda el link permanente en el CD.</li>
+              </ul>
+            </li>
+          </ol>
+          <h3>🔧 Gestión de links guardados</h3>
+          <ul>
+            <li><b>Mantener presionado</b> (600 ms) un link guardado → aparece un modal para quitarlo individualmente.</li>
+            <li>Al pie de la sección hay un botón <b>🔄 Resetear todos los links guardados</b>.</li>
+          </ul>
+          <div class="callout ok"><span class="ico">✅</span><div>100% legal: <b>NO descarga audio</b> ni reproduce contenido no autorizado. Solo abre reproductores oficiales.</div></div>
+        </section>
+
+        <section class="manual-section" data-sec="legal">
+          <div class="manual-section-head"><div class="sh-icon">⚖️</div><div class="sh-text"><h2>Aviso legal + Firma SHA-256</h2></div></div>
+          <p>La <b>primera vez</b> que abrís la app, aparece un modal con el aviso legal. Tenés que marcar el checkbox para poder aceptar.</p>
+          <h3>🔐 Firma SHA-256</h3>
+          <p>Al aceptar, se genera un hash criptográfico de la aceptación y se guarda en tu navegador.</p>
+          <h3>📄 Exportar a PDF</h3>
+          <p>Desde ⚙️ → <b>📄 Guardar aviso legal (PDF)</b> se abre una versión imprimible con la firma incluida.</p>
+        </section>
+
+        <section class="manual-section" data-sec="primeros">
+          <div class="manual-section-head"><div class="sh-icon">🚀</div><div class="sh-text"><h2>Primeros pasos</h2></div></div>
+          <div class="manual-step"><span class="step-num">1</span><span class="step-title">Configurá tu token de Discogs</span><div class="step-desc">Menú ⚙️ → 🎚️ Configurar Discogs.</div></div>
+          <div class="manual-step"><span class="step-num">2</span><span class="step-title">Aceptá el aviso legal</span><div class="step-desc">Se muestra la primera vez.</div></div>
+          <div class="manual-step"><span class="step-num">3</span><span class="step-title">Creá tu primera categoría</span><div class="step-desc"><kbd>Ctrl</kbd>+<kbd>K</kbd></div></div>
+          <div class="manual-step"><span class="step-num">4</span><span class="step-title">Creá subcategorías (opcional)</span><div class="step-desc">Elegí la categoría y clickeá <b>➕ Crear primera subcategoría</b>.</div></div>
+          <div class="manual-step"><span class="step-num">5</span><span class="step-title">Cargá tus CDs</span><div class="step-desc"><kbd>Ctrl</kbd>+<kbd>N</kbd> o usá el escáner 📷.</div></div>
+        </section>
+
+        <section class="manual-section" data-sec="atajos">
+          <div class="manual-section-head"><div class="sh-icon">⌨️</div><div class="sh-text"><h2>Atajos de teclado</h2></div></div>
+          <table>
+            <tr><th>Atajo</th><th>Acción</th></tr>
+            <tr><td><kbd>F1</kbd></td><td>Manual</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>N</kbd></td><td>Nuevo CD</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>K</kbd></td><td>Nueva categoría</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>E</kbd></td><td>Enriquecimiento masivo</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>F</kbd></td><td>Filtros</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>D</kbd></td><td>Panel de control</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>G</kbd></td><td>Vista cuadrícula</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>Backup JSON</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>Deshacer</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd></td><td>Detectar duplicados</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>L</kbd></td><td>Ver préstamos</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>H</kbd></td><td>Historial</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>T</kbd></td><td>Tema claro/oscuro</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Q</kbd></td><td>Salir del sistema</td></tr>
+          </table>
+        </section>
+
+        <section class="manual-section" data-sec="cats">
+          <div class="manual-section-head"><div class="sh-icon">📁</div><div class="sh-text"><h2>Categorías</h2></div></div>
+          <p>Pestañas en la parte superior. Cada una tiene nombre y emoji.</p>
+        </section>
+
+        <section class="manual-section" data-sec="cds">
+          <div class="manual-section-head"><div class="sh-icon">💿</div><div class="sh-text"><h2>Gestión de CDs</h2></div></div>
+          <p>Más de 30 campos agrupados en 5 pestañas. Con solo <b>Título + Intérprete</b> alcanza.</p>
+        </section>
+
+        <section class="manual-section" data-sec="portadas">
+          <div class="manual-section-head"><div class="sh-icon">🖼️</div><div class="sh-text"><h2>Portadas</h2></div></div>
+          <p>Se obtienen de <b>Discogs</b> y <b>MusicBrainz Cover Art Archive</b>.</p>
+        </section>
+
+        <section class="manual-section" data-sec="filtros">
+          <div class="manual-section-head"><div class="sh-icon">🔍</div><div class="sh-text"><h2>Búsqueda avanzada</h2></div></div>
+          <p><b>Búsqueda avanzada:</b> <code>artist:Pink</code>, <code>year:>1980</code>, <code>pink AND floyd</code>.</p>
+        </section>
+
+        <section class="manual-section" data-sec="seleccion">
+          <div class="manual-section-head"><div class="sh-icon">☑️</div><div class="sh-text"><h2>Selección múltiple</h2></div></div>
+          <p>Operaciones en lote: estado, ubicación, mover, portadas, eliminar.</p>
+        </section>
+
+        <section class="manual-section" data-sec="anioedicion">
+          <div class="manual-section-head"><div class="sh-icon">📅</div><div class="sh-text"><h2>Año álbum vs. Año edición</h2></div></div>
+          <table>
+            <tr><th>Campo</th><th>Qué guarda</th></tr>
+            <tr><td><b>Año álbum</b></td><td>Cuándo se lanzó por primera vez el álbum</td></tr>
+            <tr><td><b>Año edición</b></td><td>Cuándo se fabricó tu ejemplar físico</td></tr>
+          </table>
+        </section>
+
+        <section class="manual-section" data-sec="salida">
+          <div class="manual-section-head"><div class="sh-icon">🚪</div><div class="sh-text"><h2>Botón Salir</h2></div></div>
+          <p>El botón <b>🚪 Salir</b> obliga a exportar antes de cerrar.</p>
+        </section>
+
+        <section class="manual-section" data-sec="duplicados">
+          <div class="manual-section-head"><div class="sh-icon">🔍</div><div class="sh-text"><h2>Detección de duplicados</h2></div></div>
+          <p>Umbral 92% de similitud. <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd>.</p>
+        </section>
+
+        <section class="manual-section" data-sec="prestamos">
+          <div class="manual-section-head"><div class="sh-icon">📚</div><div class="sh-text"><h2>Préstamos</h2></div></div>
+          <p>Registrá préstamos con alertas de vencimiento.</p>
+        </section>
+
+        <section class="manual-section" data-sec="cf">
+          <div class="manual-section-head"><div class="sh-icon">📝</div><div class="sh-text"><h2>Campos personalizados</h2></div></div>
+          <p>Tipos: texto, número, fecha, sí/no, lista.</p>
+        </section>
+
+        <section class="manual-section" data-sec="escaner">
+          <div class="manual-section-head"><div class="sh-icon">📷</div><div class="sh-text"><h2>Escáner</h2></div></div>
+          <p>Usa <code>BarcodeDetector</code>. Soporta EAN-13, EAN-8, UPC-A, UPC-E, Code-128.</p>
+        </section>
+
+        <section class="manual-section" data-sec="historial">
+          <div class="manual-section-head"><div class="sh-icon">📜</div><div class="sh-text"><h2>Historial</h2></div></div>
+          <p>Últimas 200 acciones.</p>
+        </section>
+
+        <section class="manual-section" data-sec="tema">
+          <div class="manual-section-head"><div class="sh-icon">🎨</div><div class="sh-text"><h2>Tema claro/oscuro</h2></div></div>
+          <p><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>T</kbd>.</p>
+        </section>
+
+        <section class="manual-section" data-sec="grid">
+          <div class="manual-section-head"><div class="sh-icon">▦</div><div class="sh-text"><h2>Vista cuadrícula</h2></div></div>
+          <p><kbd>Ctrl</kbd>+<kbd>G</kbd>.</p>
+        </section>
+
+        <section class="manual-section" data-sec="corrector">
+          <div class="manual-section-head"><div class="sh-icon">🧹</div><div class="sh-text"><h2>Corrector y mayúsculas</h2></div></div>
+          <p>Corrige typos comunes y limpia sufijos "(COPIA)".</p>
+        </section>
+
+        <section class="manual-section" data-sec="dash">
+          <div class="manual-section-head"><div class="sh-icon">📊</div><div class="sh-text"><h2>Panel de control</h2></div></div>
+          <p>KPIs, distribución, top intérpretes, línea de tiempo, nube, salud y proyección.</p>
+        </section>
+
+        <section class="manual-section" data-sec="proyeccion">
+          <div class="manual-section-head"><div class="sh-icon">💰</div><div class="sh-text"><h2>Proyección de valor</h2></div></div>
+          <p>Interés compuesto: <code>VF = VA × (1+tasa)<sup>años</sup></code>.</p>
+        </section>
+
+        <section class="manual-section" data-sec="enriquecimiento">
+          <div class="manual-section-head"><div class="sh-icon">✨</div><div class="sh-text"><h2>Enriquecimiento</h2></div></div>
+          <p>Orden: <b>Discogs → MusicBrainz</b>.</p>
+          <div class="callout warn"><span class="ico">💡</span><div>Configurá tu <b>token de Discogs</b> para evitar rate limits.</div></div>
+        </section>
+
+        <section class="manual-section" data-sec="discogs">
+          <div class="manual-section-head"><div class="sh-icon">🎚️</div><div class="sh-text"><h2>Configurar Discogs</h2></div></div>
+          <ol>
+            <li>Entrá a <a href="https://www.discogs.com/settings/developers" target="_blank" rel="noopener">discogs.com/settings/developers</a>.</li>
+            <li>Generate new token → copialo.</li>
+            <li>En la app: ⚙️ → 🎚️ Configurar Discogs → pegar → Probar → Guardar.</li>
+          </ol>
+        </section>
+
+        <section class="manual-section" data-sec="folder">
+          <div class="manual-section-head"><div class="sh-icon">📁</div><div class="sh-text"><h2>Carpeta predeterminada</h2></div></div>
+          <p>File System Access API (Chrome/Edge/Opera).</p>
+        </section>
+
+        <section class="manual-section" data-sec="importexport">
+          <div class="manual-section-head"><div class="sh-icon">📥</div><div class="sh-text"><h2>Importar / Exportar</h2></div></div>
+          <p>Formatos: JSON, CSV, Markdown, PDF.</p>
+        </section>
+
+        <section class="manual-section" data-sec="backup">
+          <div class="manual-section-head"><div class="sh-icon">💾</div><div class="sh-text"><h2>Copia automática</h2></div></div>
+          <p>Recordatorio cada 4s de inactividad.</p>
+        </section>
+
+        <section class="manual-section" data-sec="faq">
+          <div class="manual-section-head"><div class="sh-icon">❓</div><div class="sh-text"><h2>Preguntas frecuentes</h2></div></div>
+          <h3>📂 ¿Cómo creo una subcategoría?</h3><p>1) Elegí una categoría. 2) Click en <b>➕ Crear primera subcategoría</b> debajo de las pestañas (o menú <b>⋯</b> → 📂 Nueva subcategoría).</p>
+          <h3>📂 ¿Se borran los CDs al eliminar una subcategoría?</h3><p>No. Solo quedan como "Sin subcategoría".</p>
+          <h3>🎧 Odesli dice 401 / "deprecado"</h3><p>Esperado. La app hace fallback automático a iTunes + Apple Music.</p>
+          <h3>⚖️ ¿Por qué aparece el modal legal?</h3><p>Obligatorio la primera vez. Se guarda firma SHA-256.</p>
+          <h3>❌ Discogs 401</h3><p>Token inválido. Generá uno nuevo.</p>
+        </section>
+
+        <section class="manual-section" data-sec="changelog">
+          <div class="manual-section-head"><div class="sh-icon">📝</div><div class="sh-text"><h2>Historial de cambios</h2></div></div>
+          <div class="changelog-item">
+            <div class="changelog-ver">v7.0.10</div>
+            <div class="changelog-body">
+              <b>Subcategorías</b>
+              <ul style="margin:6px 0 0;padding-left:20px">
+                <li>📂 Sistema de <b>subcategorías</b> por categoría.</li>
+                <li>🎯 Filtro rápido por subcategoría.</li>
+                <li>➕ Botón visible incluso sin subcategorías previas.</li>
+                <li>✏️ Renombrar, cambiar icono, mover y eliminar.</li>
+                <li>🗑️ Eliminar NO borra CDs.</li>
+                <li>💾 Incluidas en backups JSON.</li>
+                <li>📝 Selector <b>📂 Subcategoría</b> en el modal de CD.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="changelog-item">
+            <div class="changelog-ver">v7.0.9</div>
+            <div class="changelog-body"><b>Auditoría de seguridad y consistencia.</b></div>
+          </div>
+          <div class="changelog-item">
+            <div class="changelog-ver">v7.0.8</div>
+            <div class="changelog-body"><b>Correcciones masivas al enriquecedor (23 fixes).</b></div>
+          </div>
+          <div class="changelog-item">
+            <div class="changelog-ver">v7.0.6</div>
+            <div class="changelog-body"><b>Streaming v5.0: album-only + gestión de links.</b></div>
+          </div>
+          <div class="changelog-item">
+            <div class="changelog-ver">v7.0.5</div>
+            <div class="changelog-body"><b>Streaming inteligente + Blindaje legal.</b></div>
+          </div>
+        </section>
+
+        <section class="manual-section" data-sec="acerca">
+          <div class="manual-section-head"><div class="sh-icon">ℹ️</div><div class="sh-text"><h2>Acerca de</h2></div></div>
+          <p><b>Discografía v7.0.10</b> — SPA autocontenida.</p>
+          <table>
+            <tr><th>Componente</th><th>Detalle</th></tr>
+            <tr><td>Lenguaje</td><td>HTML5 + CSS3 + JS vanilla</td></tr>
+            <tr><td>Almacenamiento</td><td>localStorage + IndexedDB + Service Worker Cache</td></tr>
+            <tr><td>Subcategorías</td><td>Por categoría · con icono · filtro propio</td></tr>
+            <tr><td>Autor</td><td><b>HDSystem IT</b></td></tr>
+            <tr><td>Teléfono</td><td><b>+54 9 11 4563-0851</b></td></tr>
+          </table>
+          <div id="manualOwnerInfo" style="font-size:.85rem;color:var(--muted);padding:12px 14px;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:10px;line-height:1.6">
+            <b>HDSystem IT</b><br>📞 +54 9 11 4563-0851<br>© 2024-2026 HDSystem IT
+          </div>
+        </section>
+      </div>
+    </div>
+    <div class="manual-version">
+      <span>📖 Manual · <span class="mv-tag">Discografía v7.0.10</span> · <b>HDSystem IT</b> · 📞 <b>+54 9 11 4563-0851</b></span>
+      <span><kbd>F1</kbd> · <kbd>Esc</kbd></span>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="albumConfirmModal">
+  <div class="modal album-confirm" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <h3><span>🎯</span><span>Confirmar álbum</span></h3>
+      <button type="button" class="close" id="albumConfirmClose">✕</button>
+    </div>
+    <div class="modal-body" id="albumConfirmBody"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="legalModal">
+  <div class="modal legal-modal" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <h3><span>⚖️</span><span>Términos y aviso legal</span></h3>
+      <button type="button" class="close" id="legalClose">✕</button>
+    </div>
+    <div class="modal-body" id="legalBody"></div>
+    <div class="modal-foot">
+      <div><button type="button" class="btn" id="legalPDF">📄 Guardar PDF</button></div>
+      <div class="right">
+        <button type="button" class="btn" id="legalLater">Ver después</button>
+        <button type="button" class="btn primary" id="legalAceptar" disabled>✓ Aceptar y continuar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button type="button" class="fab-ver-todos" id="fabVerTodos" title="Quitar filtro"><span class="ico">✕</span><span class="txt">Ver todos</span></button>
+<div id="toasts"></div>
+
+<script src="app.js"></script>
+<script>
+(function(){
+  if (!window.Capacitor) return;
+  var P = window.Capacitor.Plugins || {};
+  var Browser = P.Browser, Share = P.Share, StatusBar = P.StatusBar, App = P.App;
+  var origOpen = window.open;
+  window.open = function(url, target, features){
+    if (url && typeof url === "string" && /^https?:/i.test(url) && Browser){
+      try { Browser.open({ url: url, presentationStyle: "popover" }); return null; } catch(e){}
+    }
+    return origOpen.call(window, url, target, features);
+  };
+  document.addEventListener("click", function(e){
+    var a = e.target && e.target.closest ? e.target.closest("a") : null;
+    if (!a || !a.href) return;
+    if (a.hasAttribute("download")) return;
+    if (a.href.indexOf("javascript:") === 0) return;
+    if (!/^https?:/i.test(a.href)) return;
+    if (a.origin === window.location.origin && a.target !== "_blank") return;
+    e.preventDefault();
+    if (Browser) Browser.open({ url: a.href }); else origOpen.call(window, a.href, "_blank");
+  }, true);
+  if (Share && navigator.share) {
+    var origShare = navigator.share.bind(navigator);
+    navigator.share = function(data){
+      return Share.share({ title: data.title || document.title || "Compartir", text: data.text || "", url: data.url || undefined, dialogTitle: "Compartir" })
+        .catch(function(err){ if (err && /cancel/i.test(err.message || "")) return; return origShare(data); });
+    };
+  }
+  function applyStatusBar(){
+    var isLight = document.body.classList.contains("light");
+    if (StatusBar){
+      StatusBar.setStyle({ style: isLight ? "LIGHT" : "DARK" }).catch(function(){});
+      StatusBar.setBackgroundColor({ color: isLight ? "#f5f7fa" : "#0e1116" }).catch(function(){});
+    }
+  }
+  if (StatusBar) applyStatusBar();
+  if (App) { App.addListener("backButton", function(){ App.exitApp(); }); }
+})();
+</script>
+</body>
+</html>

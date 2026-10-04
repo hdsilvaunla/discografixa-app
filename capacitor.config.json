@@ -1,0 +1,24 @@
+{
+  "appId": "com.hdsystem.discografica",
+  "appName": "COLECCION DISCOGRAFICA",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https",
+    "allowNavigation": [
+      "*"
+    ]
+  },
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "backgroundColor": "#0e1116",
+      "showSpinner": false
+    }
+  }
+}

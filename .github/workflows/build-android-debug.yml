@@ -1,0 +1,104 @@
+name: Build Android APK (debug)
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Add Android platform
+        run: |
+          if [ ! -d "android" ]; then
+            npx cap add android
+          fi
+
+      - name: Sync web assets
+        run: npx cap sync android
+
+      - name: Apply app icon
+        run: |
+          if [ ! -d "android/app/src/main/res" ]; then
+            echo "No res folder, skipping icon"
+            exit 0
+          fi
+          if [ ! -f "assets/icon/logo.png" ] && [ ! -f "assets/icon/logo.svg" ] && [ ! -f "assets/icon/logo.jpg" ] && [ ! -f "assets/icon/logo.webp" ]; then
+            echo "No custom logo, using default"
+            exit 0
+          fi
+          LOGO=$(ls assets/icon/logo.* 2>/dev/null | head -n1)
+          echo "Applying icon from $LOGO"
+          for SIZE in 48 72 96 144 192 512; do
+            case $SIZE in
+              48)  FOLDER="mipmap-mdpi" ;;
+              72)  FOLDER="mipmap-hdpi" ;;
+              96)  FOLDER="mipmap-xhdpi" ;;
+              144) FOLDER="mipmap-xxhdpi" ;;
+              192) FOLDER="mipmap-xxxhdpi" ;;
+              512) FOLDER="mipmap-xxxhdpi" ;;
+            esac
+            mkdir -p "android/app/src/main/res/$FOLDER"
+            convert "$LOGO" -resize ${SIZE}x${SIZE}^ -gravity center -extent ${SIZE}x${SIZE} "android/app/src/main/res/$FOLDER/ic_launcher.png" 2>/dev/null || true
+            convert "$LOGO" -resize ${SIZE}x${SIZE}^ -gravity center -extent ${SIZE}x${SIZE} "android/app/src/main/res/$FOLDER/ic_launcher_round.png" 2>/dev/null || true
+            convert "$LOGO" -resize ${SIZE}x${SIZE}^ -gravity center -extent ${SIZE}x${SIZE} "android/app/src/main/res/$FOLDER/ic_launcher_foreground.png" 2>/dev/null || true
+          done
+          echo "Icon applied successfully"
+
+      - name: Build APK (debug)
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Prepare artifacts
+        run: |
+          mkdir -p artifacts
+          cp android/app/build/outputs/apk/debug/app-debug.apk artifacts/app-debug.apk
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-debug
+          path: artifacts/*.apk
+          retention-days: 30
+
+      - name: Create Release
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.0-debug-${{ github.run_number }}
+          name: Mobile App v1.0.0 (debug build ${{ github.run_number }})
+          body: |
+            APK debug generado automáticamente.
+            Firma debug — puede mostrar advertencia de Play Protect.
+            App ID: com.example.app
+          files: artifacts/*.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
